@@ -7,6 +7,19 @@ $( document ).ready( function() {
 function deactivatePerson(){
   var deactivateID = $( this ).data( 'id' );
   console.log( 'id of record to deactivate: ' + deactivateID );
+
+  var deactivateMe = {
+    "id": deactivateID
+  };
+  console.log( 'object to send:', deactivateMe );
+  $.ajax({
+    type: 'PUT',
+    url: '/deactivate',
+    data: deactivateMe,
+    success: function( data ){
+      getData();
+    }
+  });
 }// end function
 
 function getData() {

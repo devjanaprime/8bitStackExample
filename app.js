@@ -1,3 +1,5 @@
+// for this example the database should be named "introToSQL"
+// with fields: username(varchar), active(boolean), created(timestamp)
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -21,12 +23,30 @@ app.listen( '5000', 'localhost', function( req, res ){
 
 // base url
 app.get('/', function(req, res) {
-    res.sendFile( path.resolve( 'views/index.html' ) );
+  console.log( 'in base url' );
+  res.sendFile( path.resolve( 'views/index.html' ) );
+});
+
+
+app.put ('/deactivate', urlencodedParser, function( req, res ) {
+  console.log( 'deactivating user with id:', req.body );
+  pg.connect( connectionString, function( err, client, done ) {
+      if(err) {
+        // was there an error? let us know if so
+        console.log(err);
+      }
+      else{
+        // no error, carry on...
+        console.log( 'connected to db' );
+        client.query( 'UPDATE users set active=false where id=' + req.body.id );
+        res.send( true );
+      }
+  });
 });
 
 // ceate a new record
 app.post( '/newRecord', urlencodedParser, function( req, res ) {
-    console.log( 'in people post: ' + req.body.username + ", " + req.body.active );
+    console.log( 'in newRecord post: ' + req.body.username + ", " + req.body.active );
     pg.connect( connectionString, function( err, client, done ) {
       client.query( 'INSERT INTO users( username, active, created ) values( $1, $2, $3 )', [ req.body.username, req.body.active, 'NOW()' ] );
     }); // end connect
@@ -37,7 +57,7 @@ app.get( '/records', function( req, res ) {
     // results will hold our results
     var results = [];
     pg.connect( connectionString, function( err, client, done ) {
-        var query = client.query('SELECT * FROM users WHERE active=true ORDER BY id DESC;');
+        var query = client.query( 'SELECT * FROM users ORDER BY active DESC;' );
         // stream results back one row at a time and push into "results"
         query.on( 'row', function( row ) {
             results.push( row );
